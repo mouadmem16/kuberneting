@@ -1,0 +1,16 @@
+# CONFIGURING
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sql-config
+data:
+  init.sql: |
+   CREATE DATABASE testing;
+   USE testing;
+   CREATE TABLE animal (name VARCHAR(20), owner VARCHAR(20), sex CHAR(1), birth DATE, death DATE);
+   INSERT INTO animal VALUES("dog", "owner-1", "m", "2002-02-01", "2022-06-05");
+   INSERT INTO animal VALUES("cat", "owner-2", "f", "2003-02-01", "2022-06-05");
+   INSERT INTO animal VALUES("bird", "owner-3", "m", "2004-02-01", "2022-06-05");
+   INSERT INTO animal VALUES("craps", "owner-1", "f", "2009-02-01", "2022-06-05");
+   INSERT INTO animal VALUES("fish", "owner-2", "m", "2004-02-01", "2022-06-05");
+

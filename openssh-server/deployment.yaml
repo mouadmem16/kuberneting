@@ -1,0 +1,23 @@
+# APPLICATION
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openssh
+spec:
+  selector:
+    matchLabels:
+      app: openssh
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: openssh
+    spec:
+      containers:
+      - name: openssh-alpine
+        image: mouadmem16/openssh-alpine:latest
+        ports:
+        - containerPort: 22
+          protocol: TCP
+          name: nginx
+

@@ -1,4 +1,4 @@
-# GENERATING KUBERNETES SECRET FROM AWS ECR AUTOMATICALLY
+# GENERATING KUBERNETES SECRET FROM AWS ECR AUTOMATICALLY BY CRONJOB (CRONTAB)
 
 ### TO Deploy this manifests you have to :
   1. Set the correct values in the deployment.yaml file

@@ -1,0 +1,35 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: secret-creation
+spec:
+  schedule: "* * * * *"                                                                    # <<---- crontab, you can generate it from https://crontab.guru 
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: sa-secret-creation
+          containers:
+          - name: secret-creation
+            image: mouadmem16/secret-creation
+            imagePullPolicy: IfNotPresent
+            env:
+            - name: AWS_ACCESS_KEY_ID
+              value: "XXXXXXXXXXXXXXXX"                                                    # <<----  AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              value: "XXXXXXXXXXXXXXXX"                                                    # <<----  AWS_SECRET_ACCESS_KEY
+            - name: AWS_DEFAULT_REGION
+              value: "eu-east-2"                                                           # <<----  AWS_DEFAULT_REGION
+            - name: NAMESPACE
+              value: "namespace"                                                           # <<----  NAMESPACE that contains the secret
+            - name: ECR_REPO_URL
+              value: "123456789.dkr.ecr.eu-east-2.amazonaws.com"                           # <<----   ECR_REPO_URL that you will pull the images from
+            - name: SECRET_NAME
+              value: "ecr-registry"                                                        # <<----   SECRET_NAME the secret name that you will use in the imagePullSecrets
+          restartPolicy: OnFailure
+          imagePullSecrets:
+          - name: ecr-registry
+          nodeSelector:
+            kubernetes.io/os: linux
+            role: workers

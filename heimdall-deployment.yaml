@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heimdall
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: heimdall
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: heimdall
+    spec:
+      volumes:
+      - name: data
+        hostPath:
+          path: /home/config # this folder must be exposed in read and write 755
+      containers:
+      - name: heimdall
+        volumeMounts:
+        - name: data 
+          mountPath: "/config"
+        image: lscr.io/linuxserver/heimdall:latest
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "Europe/London"
+        ports:
+        - name: https
+          containerPort: 443
+        - name: http
+          containerPort: 80
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: heimdall-service
+  labels:
+    run: heimdall-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    nodePort: 30025
+    name: http-port
+  selector:
+    app: heimdall
+  type: NodePort
+

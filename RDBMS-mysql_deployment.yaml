@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: mysql-claim
+      containers:
+      - name: mysql
+        volumeMounts:
+        - name: data 
+          mountPath: "/var/lib/mysql"
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "9euyJpFJSX"
+        - name: MYSQL_DATABASE
+          value: grafana
+        - name: MYSQL_USER
+          value: grafana
+        - name: MYSQL_PASSWORD
+          value: grafana
+        ports:
+        - containerPort: 3306
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  labels:
+    run: mysql-service
+spec:
+  ports:
+  - port: 3306
+    protocol: TCP
+    name: mysql-port
+  selector:
+    app: mysql
+  type: ClusterIP
+

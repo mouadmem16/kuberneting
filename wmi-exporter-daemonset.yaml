@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: wmi-exporter
+  name: wmi-app-exporter
+spec:
+  selector:
+    matchLabels:
+      app: wmi-exporter
+  template:
+    metadata:
+      labels:
+        app: wmi-exporter
+    spec:
+      # initContainers:
+      # - name: download-widows-exporter
+      #   image: rancher/wmi_exporter-package:v0.0.7
+      #   command:
+      #     - curl  
+      containers:
+      - name: exporter-node
+        image: rancher/wmi_exporter-package:v0.0.7
+        ports:
+        - name: http
+          containerPort: 9796
+        env:
+        - name: LISTEN_PORT
+          value: "9796"
+        - name: ENABLED_COLLECTORS
+          value: "net,os,service,system,cpu,cs,logical_disk,tcp,memory,container"
+        volumeMounts:
+        - name: wins-pipe
+          mountPath: \\.\pipe\rancher_wins
+        - name: binary-host-path
+          mountPath: c:/etc/wmi-exporter
+      nodeSelector:
+        kubernetes.io/os: windows
+      volumes:
+      - name: wins-pipe
+        hostPath:
+          path: \\.\pipe\rancher_wins
+      - name: binary-host-path
+        hostPath:
+          path: c:/etc/wmi-exporter
+          type: DirectoryOrCreate
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: wmi-exporter-service
+  labels:
+    app: wmi-exporter
+spec:
+  type: NodePort
+  ports:
+  - port: 9796
+    targetPort: 9796
+  selector:
+    app: wmi-exporter

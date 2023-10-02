@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codebox
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: codebox
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: codebox
+    spec:
+      volumes:
+      - name: data
+        hostPath:
+          path: /home/sourceCode # this folder must be exposed in read and write 755
+      containers:
+      - name: codebox
+        volumeMounts:
+        - name: data 
+          mountPath: "/workspace"
+        image: etopian/codebox-ide
+        ports:
+        - containerPort: 8000
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: codebox-service
+  labels:
+    run: codebox-service
+spec:
+  ports:
+  - port: 8000
+    protocol: TCP
+    nodePort: 30025
+    name: ide-port
+  selector:
+    app: codebox
+  type: NodePort
+

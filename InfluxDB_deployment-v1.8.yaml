@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: influxdb-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influxdb
+spec:
+  selector:
+    matchLabels:
+      app: influxdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: influxdb-claim
+      containers:
+      - name: influxdb
+        volumeMounts:
+        - name: data 
+          mountPath: "/var/lib/influxdb"
+        image: influxdb:1.8
+        ports:
+        - containerPort: 8086
+        env:
+         - name: DOCKER_INFLUXDB_INIT_USERNAME
+           value: admin
+         - name: DOCKER_INFLUXDB_INIT_PASSWORD
+           value: 123AZE123
+         - name: DOCKER_INFLUXDB_INIT_ORG
+           value: FAYAT
+         - name: DOCKER_INFLUXDB_INIT_BUCKET
+           value: fayat
+         - name: DOCKER_INFLUXDB_INIT_MODE
+           value: setup
+      nodeSelector:
+        kubernetes.io/os: linux
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb-service
+  labels:
+    run: influxdb-service
+spec:
+  ports:
+  - port: 8086
+    protocol: TCP
+    nodePort: 30005
+    name: db-port
+  selector:
+    app: influxdb
+  type: NodePort
+

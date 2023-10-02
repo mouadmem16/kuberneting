@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k6
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: k6
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: k6
+    spec:
+      containers:
+      - name: k6
+        image: loadimpact/k6
+        command:
+          - bash
+          - -c
+          - k6 --out influxdb=http://influxdb-service:8086/myk6db <script.js> 
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influxdb
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: influxdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      volumes:
+      - name: data
+        hostPath:
+          path: /home/dataFolder # this folder must be exposed in read and write 755
+      containers:
+      - name: influxdb
+        volumeMounts:
+        - name: data 
+          mountPath: "/var/lib/influxdb2"
+        image: influxdb:2.0
+        ports:
+        - containerPort: 8086
+        env:
+          DOCKER_INFLUXDB_INIT_USERNAME: admin
+          DOCKER_INFLUXDB_INIT_PASSWORD: admin
+          DOCKER_INFLUXDB_INIT_ORG: org-com
+          DOCKER_INFLUXDB_INIT_BUCKET: my-bucket
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb-service
+  labels:
+    run: influxdb-service
+spec:
+  ports:
+  - port: 8086
+    protocol: TCP
+    nodePort: 30005
+    name: db-port
+  selector:
+    app: influxdb
+  type: NodePort
+

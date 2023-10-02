@@ -1,0 +1,36 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: stress
+spec:
+  replicas: 1
+  selector:
+   matchLabels:
+      app: stress
+  template:
+    metadata:
+      name: stress
+      labels:
+        app: stress
+    spec:
+      containers:
+      - name: stress
+        args:
+        - --cpu 
+        - "1"
+        - --io 
+        - "1"
+        - --malloc
+        - "2"
+        - --malloc-bytes
+        - "1024"
+        image: polinux/stress-ng
+        imagePullPolicy: IfNotPresent
+        resources: 
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+  
